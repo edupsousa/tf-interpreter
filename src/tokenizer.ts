@@ -55,18 +55,28 @@ type SizedToken = {
   value: string;
 };
 
+type HeredocTokenType = "heredoc_string";
+
 type HeredocStringToken = Omit<SizedToken, "type"> & {
-  type: "heredoc_string";
+  type: HeredocTokenType;
   delimiter: string;
   indented: boolean;
 };
 
+type UnknownTokenType = "unknown";
+
 type UnknownToken = {
-  type: "unknown";
+  type: UnknownTokenType;
   start: Position;
   end: Position;
   value: string;
 };
+
+export type TokenType =
+  | UnsizedTokenType
+  | SizedTokenType
+  | HeredocTokenType
+  | UnknownTokenType;
 
 export type Token =
   | UnsizedToken

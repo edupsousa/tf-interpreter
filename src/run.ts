@@ -3,10 +3,18 @@ import { join } from "path";
 import { tokenize } from "./tokenizer";
 
 async function run(path: string) {
-  const files = await fs.readdir(path);
+  const stats = await fs.stat(path);
+  const files: string[] = [];
+
+  if (stats.isDirectory()) {
+    files.push(...(await fs.readdir(path)).map((file) => join(path, file)));
+  } else if (stats.isFile()) {
+    files.push(path);
+  }
+
   const tfFiles = files.filter((file) => file.endsWith(".tf"));
   const content = await Promise.all(
-    tfFiles.map((file) => fs.readFile(join(path, file), "utf-8"))
+    tfFiles.map((file) => fs.readFile(file, "utf-8"))
   );
   const tokenized = content.map(tokenize);
   for (let i = 0; i < tfFiles.length; i++) {
@@ -16,4 +24,5 @@ async function run(path: string) {
   }
 }
 
-run(join(import.meta.dirname, "..", "sample")).catch(console.error);
+const path = process.argv[2];
+run(path);
