@@ -1,33 +1,44 @@
-class Scanner {
-  protected content: string;
-  protected pos: number;
+export type Position = {
+  line: number;
+  column: number;
+  index: number;
+};
 
-  constructor(content: string) {
-    this.content = content;
-    this.pos = 0;
-  }
+export function createScanner(content: string) {
+  let index = 0;
+  let line = 1;
+  let column = 1;
 
-  public eof(): boolean {
-    return this.pos >= this.content.length;
-  }
-
-  public peek(): string {
-    return this.content[this.pos];
-  }
-
-  public forward(): void {
-    this.pos++;
-  }
-
-  public skipWhitespace(): void {
-    while (!this.eof() && " \t".includes(this.peek())) {
-      this.forward();
+  const eof = () => index >= content.length;
+  const peek = () => content[index];
+  const forward = () => {
+    if (eof()) return;
+    if (peek() === "\n") {
+      line++;
+      column = 1;
+    } else {
+      column++;
     }
-  }
+    index++;
+  };
+  const skipWhitespace = () => {
+    while (!eof() && " \t".includes(peek())) {
+      forward();
+    }
+  };
+  const peekNext = () => content[index + 1] ?? "";
+  const peekNextNext = () => content[index + 2] ?? "";
+  const getPosition = (): Position => ({ line, column, index });
 
-  public peekNext(): string {
-    return this.content[this.pos + 1] ?? "";
-  }
+  return {
+    eof,
+    peek,
+    forward,
+    skipWhitespace,
+    peekNext,
+    peekNextNext,
+    getPosition,
+  };
 }
 
-export { Scanner };
+export type Scanner = ReturnType<typeof createScanner>;
