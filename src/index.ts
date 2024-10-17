@@ -1,20 +1,28 @@
 import { promises as fs } from "node:fs";
 import { join } from "node:path";
 import { Scanner } from "./lexer/scanner";
+import { Parser } from "./parser/parser";
+import { inspect } from "node:util";
 
 async function processFile(filePath: string) {
   console.log(`Processing file "${filePath}"`);
   const data = await fs.readFile(filePath, "utf-8");
   const tokens = Scanner.scanSource(data);
-  console.log(tokens);
+  const syntaxTree = Parser.parseConfigFile(tokens);
+  console.log(inspect(syntaxTree, { depth: null, colors: true }));
 }
 
 async function processDirectory(directoryPath: string) {
   console.log(`Processing directory "${directoryPath}"`);
-  const files = await fs
+  await fs
     .readdir(directoryPath)
     .then((files) => files.filter((file) => file.endsWith(".tf")))
-    .then((files) => files.map((file) => join(directoryPath, file)));
+    .then((files) => files.map((file) => join(directoryPath, file)))
+    .then((files) =>
+      files.reduce((promise, file) => {
+        return promise.then(() => processFile(file));
+      }, Promise.resolve())
+    );
 }
 
 async function main() {

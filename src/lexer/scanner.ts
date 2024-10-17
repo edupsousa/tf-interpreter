@@ -204,6 +204,7 @@ export class Scanner {
         delimiter
       )
     );
+    this.addVoidToken(TokenType.EOL);
   }
 
   private lineComment(
